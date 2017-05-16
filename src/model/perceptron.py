@@ -34,7 +34,7 @@ class Perceptron(Classifier):
     testSet : list
     weight : list
     """
-    def __init__(self, train, valid, test, 
+    def __init__(self, train, valid, test,
                                     learningRate=0.01, epochs=50):
 
         self.learningRate = learningRate
@@ -43,6 +43,8 @@ class Perceptron(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
+
+        print train.input.shape
 
         # Initialize the weight vector with small random values
         # around 0 and0.1
@@ -56,9 +58,18 @@ class Perceptron(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        
+
         # Write your code to train the perceptron here
-        pass
+        for epoch in range(1,self.epochs+1):
+            y_pred=np.asarray(map(self.classify, self.trainingSet))
+            self.updateWeights(self.trainingSet.input, np.asarray(self.trainingSet.label) - y_pred)
+
+            if verbose:
+                # cross validation accuracy
+                y_cv_pred = np.asarray(self.evaluate(self.validationSet.input))
+                accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred))
+                print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch, self.epochs, accuracy))
+
 
     def classify(self, testInstance):
         """Classify a single instance.
@@ -73,7 +84,7 @@ class Perceptron(Classifier):
             True if the testInstance is recognized as a 7, False otherwise.
         """
         # Write your code to do the classification on an input image
-        pass
+        return self.fire(testInstance)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -96,8 +107,9 @@ class Perceptron(Classifier):
 
     def updateWeights(self, input, error):
         # Write your code to update the weights of the perceptron here
-        pass
-         
+        self.weight+=self.learningRate*input.transpose().dot(error)
+
+
     def fire(self, input):
         """Fire the output of the perceptron corresponding to the input """
         return Activation.sign(np.dot(np.array(input), self.weight))
