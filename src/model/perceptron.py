@@ -60,7 +60,7 @@ class Perceptron(Classifier):
         """
 
         # Write your code to train the perceptron here
-        for epoch in range(1,self.epochs+1):
+        for epoch in range(1,self.epochs):
             y_pred=np.asarray(map(self.classify, self.trainingSet))
             self.updateWeights(self.trainingSet.input, np.asarray(self.trainingSet.label) - y_pred)
 
