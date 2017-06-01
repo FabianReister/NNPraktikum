@@ -19,26 +19,25 @@ class Activation:
 
     @staticmethod
     def sigmoid(netOutput):
-        pass
+        return np.reciprocal(1+np.exp(-netOutput))
 
     @staticmethod
     def sigmoidPrime(netOutput):
-        # Here you have to code the derivative of sigmoid function
         # netOutput.*(1-netOutput)
-        pass
+        return self.sigmoid(netOutput)*(1-self.sigmoid(netOutput))
 
     @staticmethod
     def tanh(netOutput):
-        pass
+        return np.tanh(netOutput)
 
     @staticmethod
     def tanhPrime(netOutput):
         # Here you have to code the derivative of tanh function
-        pass
+        return (1+self.tanh(netOutput))*(1-self.tanh(netOutput))
 
     @staticmethod
     def rectified(netOutput):
-        return lambda x: max(0.0, x)
+        return map(lambda x: np.amax(0.0, x),netOutput)
 
     @staticmethod
     def rectifiedPrime(netOutput):
