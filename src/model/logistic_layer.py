@@ -84,7 +84,8 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        # TODO bias?
+        return self.activation(self.weights.transpose().dot(input))
 
     def computeDerivative(self, nextDerivatives, nextWeights):
         """
