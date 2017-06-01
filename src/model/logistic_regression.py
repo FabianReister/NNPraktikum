@@ -45,7 +45,7 @@ class LogisticRegression(Classifier):
         self.testSet = test
 
         # Initialize the weight vector with small values
-        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
+        self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -57,7 +57,7 @@ class LogisticRegression(Classifier):
         """
 
         pass
-        
+
     def classify(self, testInstance):
         """Classify a single instance.
 

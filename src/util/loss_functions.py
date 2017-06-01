@@ -30,6 +30,7 @@ class AbsoluteError(Error):
     """
     The Loss calculated by the number of differences between target and output
     """
+
     def errorString(self):
         self.errorString = 'absolute'
 
@@ -42,6 +43,7 @@ class DifferentError(Error):
     """
     The Loss calculated by the number of differences between target and output
     """
+
     def errorString(self):
         self.errorString = 'different'
 
@@ -55,6 +57,7 @@ class MeanSquaredError(Error):
     The Loss calculated by the mean of the total squares of differences between
     target and output.
     """
+
     def errorString(self):
         self.errorString = 'mse'
 
@@ -68,6 +71,7 @@ class SumSquaredError(Error):
     The Loss calculated by the sum of the total squares of differences between
     target and output.
     """
+
     def errorString(self):
         self.errorString = 'sse'
 
@@ -81,6 +85,7 @@ class BinaryCrossEntropyError(Error):
     The Loss calculated by the Cross Entropy between binary target and
     probabilistic output (BCE)
     """
+
     def errorString(self):
         self.errorString = 'bce'
 
@@ -93,6 +98,7 @@ class CrossEntropyError(Error):
     The Loss calculated by the more general Cross Entropy between two
     probabilistic distributions.
     """
+
     def errorString(self):
         self.errorString = 'crossentropy'
 

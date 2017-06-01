@@ -31,7 +31,6 @@ def main():
     myPerceptronClassifier.train()
     print("Done..")
 
-    
     # Do the recognizer
     # Explicitly specify the test set to be evaluated
     stupidPred = myStupidClassifier.evaluate()
@@ -48,7 +47,7 @@ def main():
     print("\nResult of the Perceptron recognizer:")
     # evaluator.printComparison(data.testSet, perceptronPred)
     evaluator.printAccuracy(data.testSet, perceptronPred)
-    
-    
+
+
 if __name__ == '__main__':
     main()
