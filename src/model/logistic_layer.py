@@ -103,7 +103,8 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        pass
+        activation_prime = Activation.getActivationPrime(
+            self.activationString)()
 
     def updateWeights(self):
         """
