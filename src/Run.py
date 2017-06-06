@@ -6,6 +6,7 @@ from model.stupid_recognizer import StupidRecognizer
 from model.perceptron import Perceptron
 from model.logistic_regression import LogisticRegression
 from report.evaluator import Evaluator
+import numpy as np
 
 
 def main():
@@ -19,8 +20,9 @@ def main():
                                         learningRate=0.005,
                                         epochs=30)
 
-    myLogisticRegressionClassifier = LogisticRegression(
-        data.trainingSet, data.validationSet, data.testSet)
+    myLogisticRegressionClassifier = LogisticRegression(data.trainingSet,
+                                                        data.validationSet,
+                                                        data.testSet)
 
     # Train the classifiers
     print("=========================")
@@ -34,7 +36,7 @@ def main():
     myPerceptronClassifier.train()
     print("Done..")
 
-    print("\LogisticRegression has been training..")
+    print("\nLogisticRegression has been training..")
     myLogisticRegressionClassifier.train()
     print("Done..")
 
