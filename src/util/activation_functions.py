@@ -24,7 +24,7 @@ class Activation:
     @staticmethod
     def sigmoidPrime(netOutput):
         # netOutput.*(1-netOutput)
-        return self.sigmoid(netOutput)*(1-self.sigmoid(netOutput))
+        return np.reciprocal(1+np.exp(-netOutput))*(1-np.reciprocal(1+np.exp(-netOutput)))
 
     @staticmethod
     def tanh(netOutput):

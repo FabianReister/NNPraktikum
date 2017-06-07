@@ -36,7 +36,7 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, learningRate=0.1, epochs=200):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -45,14 +45,11 @@ class LogisticRegression(Classifier):
         self.validationSet = valid
         self.testSet = test
 
-        """
-        TODO
-        implement as function argument 
-        """
-        self.batch_size = 10
 
         # Initialize the weight vector with small values
         self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
+
+        self.bce = BinaryCrossEntropyError()
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -62,16 +59,34 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
+
         
 
-        for epoch in range(1, self.epochs):
-            for counter in range(0, self.trainingSet.input.shape[0]/10):
-                grad = []
-                y_pred = np.asarray(map(self.classify, self.trainingSet.input[counter*10:counter*10+9]))
-                bce = BinaryCrossEntropyError()
-                bce_error = bce.calculateError(np.asarray(self.trainingSet.label[counter*10:counter*10+9]), y_pred)
-                grad = bce_error * self.trainingSet.input[counter*10:counter*10+9]
-                self.updateWeights( np.sum(grad, axis=0) ) 
+        for epoch in range(0, self.epochs):
+
+            y_pred = np.asarray(map(self.classify, self.trainingSet.input))
+
+            bce_error = self.bce.calculateError(np.asarray(self.trainingSet.label), y_pred)
+
+
+            dE_dy = (self.trainingSet.label - y_pred ) / ( ( y_pred - 1 ).conjugate().dot( y_pred ) )  
+            dy_dx = Activation.sigmoidPrime(y_pred)
+            dx_dw = y_pred
+
+            dE_dw = np.asarray(dE_dy * dy_dx * dx_dw)
+            
+            grad = self.trainingSet.input.transpose().dot( dE_dw )
+
+            self.updateWeights( grad ) 
+            
+            
+            if verbose:
+
+                # cross validation accuracy
+                y_cv_pred = np.asarray(self.evaluate(self.validationSet.input))
+                accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred))
+                print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch+1, self.epochs, accuracy))
+
 
     def classify(self, testInstance):
         """Classify a single instance.
@@ -116,8 +131,7 @@ class LogisticRegression(Classifier):
 
     def updateWeights(self, grad):
 
-        print(grad)
-        self.weight +=  self.learningRate * grad
+        self.weight += -self.learningRate * grad
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
