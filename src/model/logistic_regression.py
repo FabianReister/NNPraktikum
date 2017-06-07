@@ -3,6 +3,7 @@
 import sys
 import logging
 import copy
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -59,6 +60,8 @@ class LogisticRegression(Classifier):
 
         self.bce = BinaryCrossEntropyError()
 
+        self.accuracy_vec = []
+
     def train(self, verbose=True):
         """Train the Logistic Regression.
 
@@ -68,6 +71,7 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
 
+        self.verbose = verbose
         
 
         for epoch in range(0, self.epochs):
@@ -93,6 +97,7 @@ class LogisticRegression(Classifier):
                 # cross validation accuracy
                 y_cv_pred = np.asarray(self.evaluate(self.validationSet.input))
                 accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred))
+                self.accuracy_vec += [accuracy]
                 print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch+1, self.epochs, accuracy))
 
 
@@ -146,3 +151,7 @@ class LogisticRegression(Classifier):
         # Not Activation.sign as in the perceptron, but sigmoid
         return Activation.sigmoid(np.dot(np.array(input), self.weight))
 
+    def drawPlot(self):
+        if self.verbose:
+            plt.plot(range(0,len(self.accuracy_vec)) , self.accuracy_vec )
+            plt.show()

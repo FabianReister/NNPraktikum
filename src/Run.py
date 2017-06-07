@@ -62,6 +62,8 @@ def main():
     # evaluator.printComparison(data.testSet, logisticPred)
     evaluator.printAccuracy(data.testSet, logisticPred)
 
+    myLogisticRegressionClassifier.drawPlot()
+
 
 if __name__ == '__main__':
     main()
