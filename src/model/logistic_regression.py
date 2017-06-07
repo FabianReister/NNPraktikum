@@ -2,6 +2,7 @@
 
 import sys
 import logging
+import copy
 
 import numpy as np
 
@@ -41,10 +42,17 @@ class LogisticRegression(Classifier):
         self.learningRate = learningRate
         self.epochs = epochs
 
-        self.trainingSet = train
-        self.validationSet = valid
-        self.testSet = test
 
+        #copy the object to avoid referenzes
+        self.trainingSet = copy.copy(train)
+        self.validationSet = copy.copy(valid)
+        self.testSet = copy.copy(test)
+
+
+        #Appending the bias
+        self.trainingSet.input = np.insert(self.trainingSet.input,  self.trainingSet.input.shape[1], 1, axis = 1)
+        self.validationSet.input = np.insert(self.validationSet.input,  self.validationSet.input.shape[1], 1, axis = 1)
+        self.testSet.input = np.insert(self.testSet.input,  self.testSet.input.shape[1], 1, axis = 1)
 
         # Initialize the weight vector with small values
         self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
