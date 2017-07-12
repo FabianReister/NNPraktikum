@@ -34,6 +34,7 @@ class Perceptron(Classifier):
     testSet : list
     weight : list
     """
+
     def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
 
         self.learningRate = learningRate
@@ -45,7 +46,7 @@ class Perceptron(Classifier):
 
         # Initialize the weight vector with small random values
         # around 0 and0.1
-        self.weight = np.random.rand(self.trainingSet.input.shape[1])/100
+        self.weight = np.random.rand(self.trainingSet.input.shape[1]) / 100
 
     def train(self, verbose=True):
         """Train the perceptron with the perceptron learning algorithm.
@@ -75,10 +76,10 @@ class Perceptron(Classifier):
                     totalError += error
 
             iteration += 1
-            
+
             if verbose:
                 logging.info("Epoch: %i; Error: %i", iteration, -totalError)
-            
+
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True
@@ -117,7 +118,7 @@ class Perceptron(Classifier):
         return list(map(self.classify, test))
 
     def updateWeights(self, input, error):
-        self.weight += self.learningRate*error*input
+        self.weight += self.learningRate * error * input
 
     def fire(self, input):
         """Fire the output of the perceptron corresponding to the input """

@@ -30,6 +30,7 @@ class AbsoluteError(Error):
     """
     The Loss calculated by the number of differences between target and output
     """
+
     def errorString(self):
         self.errorString = 'absolute'
 
@@ -42,6 +43,7 @@ class DifferentError(Error):
     """
     The Loss calculated by the number of differences between target and output
     """
+
     def errorString(self):
         self.errorString = 'different'
 
@@ -55,12 +57,13 @@ class MeanSquaredError(Error):
     The Loss calculated by the mean of the total squares of differences between
     target and output.
     """
+
     def errorString(self):
         self.errorString = 'mse'
 
     def calculateError(self, target, output):
         # MSE = 1/n*sum (i=1 to n) of (target_i - output_i)^2)
-        pass
+        return np.mean ( (target - output).transpose().dot(target - output) )
 
 
 class SumSquaredError(Error):
@@ -68,12 +71,13 @@ class SumSquaredError(Error):
     The Loss calculated by the sum of the total squares of differences between
     target and output.
     """
+
     def errorString(self):
         self.errorString = 'sse'
 
     def calculateError(self, target, output):
         # SSE = 1/2*sum (i=1 to n) of (target_i - output_i)^2)
-        pass
+        return 1/2 * np.sum ( (target - output).transpose().dot(target - output) )
 
 
 class BinaryCrossEntropyError(Error):
@@ -81,11 +85,12 @@ class BinaryCrossEntropyError(Error):
     The Loss calculated by the Cross Entropy between binary target and
     probabilistic output (BCE)
     """
+
     def errorString(self):
         self.errorString = 'bce'
 
     def calculateError(self, target, output):
-        pass
+        return -target.transpose().dot( np.log(output) ) - (1 - target).transpose().dot( np.log (1 - output))
 
 
 class CrossEntropyError(Error):
@@ -93,8 +98,9 @@ class CrossEntropyError(Error):
     The Loss calculated by the more general Cross Entropy between two
     probabilistic distributions.
     """
+
     def errorString(self):
         self.errorString = 'crossentropy'
 
     def calculateError(self, target, output):
-        pass
+        return -np.sum( target.transpose().dot(output) )

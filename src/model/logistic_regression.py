@@ -2,11 +2,14 @@
 
 import sys
 import logging
+import copy
+import matplotlib.pyplot as plt
 
 import numpy as np
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
+from util.loss_functions import BinaryCrossEntropyError
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -35,17 +38,29 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, learningRate=0.1, epochs=200):
 
         self.learningRate = learningRate
         self.epochs = epochs
 
-        self.trainingSet = train
-        self.validationSet = valid
-        self.testSet = test
+
+        #copy the object to avoid referenzes
+        self.trainingSet = copy.copy(train)
+        self.validationSet = copy.copy(valid)
+        self.testSet = copy.copy(test)
+
+
+        #Appending the bias
+        self.trainingSet.input = np.insert(self.trainingSet.input,  self.trainingSet.input.shape[1], 1, axis = 1)
+        self.validationSet.input = np.insert(self.validationSet.input,  self.validationSet.input.shape[1], 1, axis = 1)
+        self.testSet.input = np.insert(self.testSet.input,  self.testSet.input.shape[1], 1, axis = 1)
 
         # Initialize the weight vector with small values
-        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
+        self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
+
+        self.bce = BinaryCrossEntropyError()
+
+        self.accuracy_vec = []
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -120,10 +135,25 @@ class LogisticRegression(Classifier):
             test = self.testSet.input
         # Once you can classify an instance, just use map for all of the test
         # set.
-        return list(map(self.classify, test))
+        listEvaluation = np.asarray(map(self.classify, test))
+        for i in range(0,listEvaluation.size):
+            if(listEvaluation[i] > 0.5):
+                listEvaluation[i] = 1
+            else:
+                listEvaluation[i] = 0
+
+        return list(listEvaluation)
+                    
 
     def updateWeights(self, grad):
         self.weight -= self.learningRate*grad
 
+        self.weight += -self.learningRate * grad
+
     def fire(self, input):
         return Activation.sigmoid(np.dot(np.array(input), self.weight))
+
+    def drawPlot(self):
+        if self.verbose:
+            plt.plot(range(0,len(self.accuracy_vec)) , self.accuracy_vec )
+            plt.show()

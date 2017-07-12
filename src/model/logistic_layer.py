@@ -52,7 +52,7 @@ class LogisticLayer(Layer):
         self.nOut = nOut
 
         # Adding bias
-        self.input = np.ndarray((nIn+1, 1))
+        self.input = np.ndarray((nIn + 1, 1))
         self.input[0] = 1
         self.output = np.ndarray((nOut, 1))
         self.delta = np.zeros((nOut, 1))
@@ -60,7 +60,7 @@ class LogisticLayer(Layer):
         # You can have better initialization here
         if weights is None:
             rns = np.random.RandomState(int(time.time()))
-            self.weights = rns.uniform(size=(nOut, nIn + 1))-0.5
+            self.weights = rns.uniform(size=(nOut, nIn + 1)) - 0.5
         else:
             self.weights = weights
 
@@ -84,7 +84,8 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        # TODO bias?
+        return self.activation(self.weights.transpose().dot(input))
 
     def computeDerivative(self, nextDerivatives, nextWeights):
         """
@@ -102,7 +103,8 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        pass
+        activation_prime = Activation.getActivationPrime(
+            self.activationString)()
 
     def updateWeights(self):
         """
