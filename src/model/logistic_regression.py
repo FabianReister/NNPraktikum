@@ -154,6 +154,5 @@ class LogisticRegression(Classifier):
         return Activation.sigmoid(np.dot(np.array(input), self.weight))
 
     def drawPlot(self):
-        if self.verbose:
-            plt.plot(range(0,len(self.accuracy_vec)) , self.accuracy_vec )
-            plt.show()
+        plt.plot(range(0,len(self.accuracy_vec)) , self.accuracy_vec )
+        plt.show()
