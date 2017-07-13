@@ -4,10 +4,10 @@ import time
 import numpy as np
 
 from util.activation_functions import Activation
-from model.layer import Layer
+#from model.layer import Layer
 
 
-class LogisticLayer(Layer):
+class LogisticLayer():
     """
     A layer of perceptrons acting as the output layer
 
@@ -70,6 +70,9 @@ class LogisticLayer(Layer):
         self.size = self.nOut
         self.shape = self.weights.shape
 
+        self.__counter = 0
+        self.__cummulated_gradient = 0
+
     def forward(self, input):
         """
         Compute forward step over the input using its weights
@@ -85,9 +88,11 @@ class LogisticLayer(Layer):
             a numpy array (1,nOut) containing the output of the layer
         """
         # TODO bias?
-        return self.activation(self.weights.transpose().dot(input))
+        input = np.insert(input, input.shape[0], 1)
+        self.y_j = self.activation(self.weights.dot(input))
+        return self.y_j
 
-    def computeDerivative(self, nextDerivatives, nextWeights):
+    def computeDerivative(self, nextDerivatives):
         """
         Compute the derivatives (back)
 
@@ -95,19 +100,36 @@ class LogisticLayer(Layer):
         ----------
         nextDerivatives: ndarray
             a numpy array containing the derivatives from next layer
-        nextWeights : ndarray
-            a numpy array containing the weights from next layer
-
+       
         Returns
         -------
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        activation_prime = Activation.getActivationPrime(
-            self.activationString)()
+		# FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
+        dE_dyj = nextDerivatives
+        dyj_dx = Activation.sigmoidPrime(self.y_j)
+        dx_dw = self.y_j
 
-    def updateWeights(self):
+        dE_dx = dE_dyj * dyj_dx
+        dE_dw = dE_dx * dx_dw
+        dE_dyi = dE_dx * self.weights
+
+        if self.__counter == 0:
+            self.__cummulated_gradient = dE_dw
+        else:
+            self.__cummulated_gradient += dE_dw
+        self.__counter += 1
+
+        return dE_dyi
+
+    def __resetCummulatedGradient(self):
+        self.__counter = 0
+        self.__cummulated_gradient = 0
+
+    def updateWeights(self, learning_rate):
         """
         Update the weights of the layer
         """
-        pass
+        self.weights -= learning_rate * (self.__cummulated_gradient / self.__counter)
+        self.__resetCummulatedGradient()

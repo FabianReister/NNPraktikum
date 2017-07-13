@@ -10,6 +10,7 @@ import numpy as np
 from util.activation_functions import Activation
 from model.classifier import Classifier
 from util.loss_functions import BinaryCrossEntropyError
+from model.logistic_layer import LogisticLayer
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -43,17 +44,15 @@ class LogisticRegression(Classifier):
         self.learningRate = learningRate
         self.epochs = epochs
 
-
-        #copy the object to avoid referenzes
+        # copy the object to avoid referenzes
         self.trainingSet = copy.copy(train)
         self.validationSet = copy.copy(valid)
         self.testSet = copy.copy(test)
 
-
-        #Appending the bias
-        self.trainingSet.input = np.insert(self.trainingSet.input,  self.trainingSet.input.shape[1], 1, axis = 1)
-        self.validationSet.input = np.insert(self.validationSet.input,  self.validationSet.input.shape[1], 1, axis = 1)
-        self.testSet.input = np.insert(self.testSet.input,  self.testSet.input.shape[1], 1, axis = 1)
+        # Appending the bias
+        self.trainingSet.input = np.insert(self.trainingSet.input, self.trainingSet.input.shape[1], 1, axis=1)
+        self.validationSet.input = np.insert(self.validationSet.input, self.validationSet.input.shape[1], 1, axis=1)
+        self.testSet.input = np.insert(self.testSet.input, self.testSet.input.shape[1], 1, axis=1)
 
         # Initialize the weight vector with small values
         self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
@@ -61,6 +60,15 @@ class LogisticRegression(Classifier):
         self.bce = BinaryCrossEntropyError()
 
         self.accuracy_vec = []
+
+        n_hidden_units1 = 1000
+        n_hidden_units2 = 28*28
+
+        hidden_layer1 = LogisticLayer(nIn=self.trainingSet.input.shape[1], nOut=n_hidden_units1, activation="sigmoid")
+        hidden_layer2 = LogisticLayer(nIn=n_hidden_units1, nOut=n_hidden_units2, activation="sigmoid")
+        classifier_layer = LogisticLayer(nIn=n_hidden_units2, nOut=1, isClassifierLayer=True, activation="sigmoid")
+
+        self.layers = [hidden_layer1, hidden_layer2, classifier_layer]
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -72,34 +80,31 @@ class LogisticRegression(Classifier):
         """
 
         self.verbose = verbose
-        
 
         for epoch in range(0, self.epochs):
 
-            y_pred = np.asarray(map(self.classify, self.trainingSet.input))
+            for i in range(0, self.trainingSet.input.shape[0]):
+                input = self.trainingSet.input[i, :]
+                label = self.trainingSet.label[i]
 
-            bce_error = self.bce.calculateError(np.asarray(self.trainingSet.label), y_pred)
+                y_pred = self.fire(input)
+
+                #output gradient
+                dE_dy = (label - y_pred) / ((y_pred - 1).conjugate().dot(y_pred))
+
+                for layer in reversed(self.layers):
+                    dE_dy = layer.computeDerivative(dE_dy)
+
+            for layer in self.layers:
+                layer.updateWeights()
 
 
-            dE_dy = (self.trainingSet.label - y_pred ) / ( ( y_pred - 1 ).conjugate().dot( y_pred ) )  
-            dy_dx = Activation.sigmoidPrime(y_pred)
-            dx_dw = y_pred
-
-            dE_dw = np.asarray(dE_dy * dy_dx * dx_dw)
-            
-            grad = self.trainingSet.input.transpose().dot( dE_dw )
-
-            self.updateWeights( grad ) 
-            
-            
             if verbose:
-
                 # cross validation accuracy
                 y_cv_pred = np.asarray(self.evaluate(self.validationSet.input))
                 accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred))
                 self.accuracy_vec += [accuracy]
-                print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch+1, self.epochs, accuracy))
-
+                print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch + 1, self.epochs, accuracy))
 
     def classify(self, testInstance):
         """Classify a single instance.
@@ -113,7 +118,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        return self.fire(testInstance)
+        return self.fire(testInstance) > 0.5
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -128,30 +133,27 @@ class LogisticRegression(Classifier):
         List:
             List of classified decisions for the dataset's entries.
         """
+
         if test is None:
             test = self.testSet.input
         # Once you can classify an instance, just use map for all of the test
         # set.
-        listEvaluation = np.asarray(map(self.classify, test))
-        for i in range(0,listEvaluation.size):
-            if(listEvaluation[i] > 0.5):
-                listEvaluation[i] = 1
-            else:
-                listEvaluation[i] = 0
+        return map(self.classify, test)
 
-        return list(listEvaluation)
-                    
-
-    def updateWeights(self, grad):
-
-        self.weight += -self.learningRate * grad
+    #def updateWeights(self, grad):
+    #   self.weight += -self.learningRate * grad
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
         # Not Activation.sign as in the perceptron, but sigmoid
-        return Activation.sigmoid(np.dot(np.array(input), self.weight))
+
+        output = input
+        for layer in self.layers:
+            output = layer.forward(output)
+
+        return output
 
     def drawPlot(self):
         if self.verbose:
-            plt.plot(range(0,len(self.accuracy_vec)) , self.accuracy_vec )
+            plt.plot(range(0, len(self.accuracy_vec)), self.accuracy_vec)
             plt.show()
