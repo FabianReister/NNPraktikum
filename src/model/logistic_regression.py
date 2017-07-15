@@ -50,25 +50,26 @@ class LogisticRegression(Classifier):
         self.testSet = copy.copy(test)
 
         # Appending the bias
-        self.trainingSet.input = np.insert(self.trainingSet.input, self.trainingSet.input.shape[1], 1, axis=1)
-        self.validationSet.input = np.insert(self.validationSet.input, self.validationSet.input.shape[1], 1, axis=1)
-        self.testSet.input = np.insert(self.testSet.input, self.testSet.input.shape[1], 1, axis=1)
+        # self.trainingSet.input = np.insert(self.trainingSet.input, self.trainingSet.input.shape[1], 1, axis=1)
+        # self.validationSet.input = np.insert(self.validationSet.input, self.validationSet.input.shape[1], 1, axis=1)
+        # self.testSet.input = np.insert(self.testSet.input, self.testSet.input.shape[1], 1, axis=1)
 
         # Initialize the weight vector with small values
-        self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
+        # self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
 
         self.bce = BinaryCrossEntropyError()
 
         self.accuracy_vec = []
 
         n_hidden_units1 = 1000
-        n_hidden_units2 = 28*28
+        n_hidden_units2 = 28 * 28
 
         hidden_layer1 = LogisticLayer(nIn=self.trainingSet.input.shape[1], nOut=n_hidden_units1, activation="sigmoid")
         hidden_layer2 = LogisticLayer(nIn=n_hidden_units1, nOut=n_hidden_units2, activation="sigmoid")
         classifier_layer = LogisticLayer(nIn=n_hidden_units2, nOut=1, isClassifierLayer=True, activation="sigmoid")
 
-        self.layers = [hidden_layer1, hidden_layer2, classifier_layer]
+        #self.layers = [hidden_layer1, hidden_layer2, classifier_layer]
+        self.layers = [classifier_layer]
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -89,15 +90,14 @@ class LogisticRegression(Classifier):
 
                 y_pred = self.fire(input)
 
-                #output gradient
-                dE_dy = (label - y_pred) / ((y_pred - 1).conjugate().dot(y_pred))
+                # output gradient
+                dE_dy = (label - y_pred)  # / ((y_pred - 1).conjugate().dot(y_pred))
 
                 for layer in reversed(self.layers):
                     dE_dy = layer.computeDerivative(dE_dy)
 
             for layer in self.layers:
-                layer.updateWeights()
-
+                layer.updateWeights(self.learningRate)
 
             if verbose:
                 # cross validation accuracy
@@ -140,7 +140,7 @@ class LogisticRegression(Classifier):
         # set.
         return map(self.classify, test)
 
-    #def updateWeights(self, grad):
+    # def updateWeights(self, grad):
     #   self.weight += -self.learningRate * grad
 
     def fire(self, input):

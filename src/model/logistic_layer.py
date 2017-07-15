@@ -89,6 +89,7 @@ class LogisticLayer():
         """
         # TODO bias?
         input = np.insert(input, input.shape[0], 1)
+        self.y_i = input
         self.y_j = self.activation(self.weights.dot(input))
         return self.y_j
 
@@ -106,10 +107,10 @@ class LogisticLayer():
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-		# FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
+        # FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
         dE_dyj = nextDerivatives
         dyj_dx = Activation.sigmoidPrime(self.y_j)
-        dx_dw = self.y_j
+        dx_dw = self.y_i
 
         dE_dx = dE_dyj * dyj_dx
         dE_dw = dE_dx * dx_dw
@@ -131,5 +132,5 @@ class LogisticLayer():
         """
         Update the weights of the layer
         """
-        self.weights -= learning_rate * (self.__cummulated_gradient / self.__counter)
+        self.weights += learning_rate * (self.__cummulated_gradient / self.__counter)
         self.__resetCummulatedGradient()
