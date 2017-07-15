@@ -91,7 +91,7 @@ class LogisticRegression(Classifier):
                 y_pred = self.fire(input)
 
                 # output gradient
-                dE_dy = (label - y_pred)  # / ((y_pred - 1).conjugate().dot(y_pred))
+                dE_dy = y_pred - label  # / ((y_pred - 1).conjugate().dot(y_pred))
 
                 for layer in reversed(self.layers):
                     dE_dy = layer.computeDerivative(dE_dy)

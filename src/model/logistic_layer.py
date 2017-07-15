@@ -132,5 +132,5 @@ class LogisticLayer():
         """
         Update the weights of the layer
         """
-        self.weights += learning_rate * (self.__cummulated_gradient / self.__counter)
+        self.weights -= learning_rate * (self.__cummulated_gradient / self.__counter)
         self.__resetCummulatedGradient()
