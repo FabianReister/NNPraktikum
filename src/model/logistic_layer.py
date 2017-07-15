@@ -110,16 +110,16 @@ class LogisticLayer():
         # FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
         dE_dyj = nextDerivatives
         dyj_dx = Activation.sigmoidPrime(self.y_j)
-        dx_dw = self.y_i
+        dx_dw = self.y_i.reshape((-1, 1))
 
-        dE_dx = dE_dyj * dyj_dx
-        dE_dw = dE_dx * dx_dw
-        dE_dyi = dE_dx * self.weights
+        dE_dxj = (dE_dyj * dyj_dx).reshape((1, -1))
+        dE_dwij = (dE_dxj * dx_dw).transpose()
+        dE_dyi = self.weights.transpose().dot(dE_dxj.transpose())
 
         if self.__counter == 0:
-            self.__cummulated_gradient = dE_dw
+            self.__cummulated_gradient = dE_dwij
         else:
-            self.__cummulated_gradient += dE_dw
+            self.__cummulated_gradient += dE_dwij
         self.__counter += 1
 
         return dE_dyi.ravel()[1:] # skip the bias

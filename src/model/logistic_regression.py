@@ -61,15 +61,15 @@ class LogisticRegression(Classifier):
 
         self.accuracy_vec = []
 
-        n_hidden_units1 = 1000
-        n_hidden_units2 = 28 * 28
+        n_hidden_units1 = 400
+        n_hidden_units2 = 200
 
         hidden_layer1 = LogisticLayer(nIn=self.trainingSet.input.shape[1], nOut=n_hidden_units1, activation="sigmoid")
         hidden_layer2 = LogisticLayer(nIn=n_hidden_units1, nOut=n_hidden_units2, activation="sigmoid")
         classifier_layer = LogisticLayer(nIn=n_hidden_units2, nOut=1, isClassifierLayer=True, activation="sigmoid")
 
-        #self.layers = [hidden_layer1, hidden_layer2, classifier_layer]
-        self.layers = [classifier_layer]
+        self.layers = [hidden_layer1, hidden_layer2, classifier_layer]
+        #self.layers = [classifier_layer]
 
     def train(self, verbose=True):
         """Train the Logistic Regression.

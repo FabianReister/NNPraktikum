@@ -23,7 +23,8 @@ def main():
     myLogisticRegressionClassifier = LogisticRegression(data.trainingSet,
                                                         data.validationSet,
                                                         data.testSet,
-                                                        learningRate=0.2)
+                                                        learningRate=0.1,
+                                                        epochs=10)
 
     # Train the classifiers
     print("=========================")
