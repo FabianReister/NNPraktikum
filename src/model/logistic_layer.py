@@ -88,7 +88,7 @@ class LogisticLayer():
             a numpy array (1,nOut) containing the output of the layer
         """
         # TODO bias?
-        input = np.insert(input, input.shape[0], 1)
+        input = np.insert(input, 0, 1)
         self.y_i = input
         self.y_j = self.activation(self.weights.dot(input))
         return self.y_j
@@ -122,7 +122,7 @@ class LogisticLayer():
             self.__cummulated_gradient += dE_dw
         self.__counter += 1
 
-        return dE_dyi
+        return dE_dyi.ravel()[1:] # skip the bias
 
     def __resetCummulatedGradient(self):
         self.__counter = 0
