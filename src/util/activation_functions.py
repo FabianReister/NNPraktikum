@@ -7,6 +7,7 @@ Activation functions which can be used within neurons.
 from numpy import exp
 from numpy import divide
 import numpy as np
+from scipy.special import expit
 
 
 class Activation:
@@ -20,12 +21,12 @@ class Activation:
 
     @staticmethod
     def sigmoid(netOutput):
-        return np.reciprocal(1+np.exp(-netOutput))
+        return expit(netOutput)
 
     @staticmethod
     def sigmoidPrime(netOutput):
         # netOutput.*(1-netOutput)
-        return np.reciprocal(1+np.exp(-netOutput))*(1-np.reciprocal(1+np.exp(-netOutput)))
+        return expit(netOutput)*(1-expit(netOutput))
 
     @staticmethod
     def tanh(netOutput):
