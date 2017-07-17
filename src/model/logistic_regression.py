@@ -47,6 +47,7 @@ class LogisticRegression(Classifier):
         # copy the object to avoid referenzes
         self.trainingSet = copy.copy(train)
         self.validationSet = copy.copy(valid)
+        self.validationSet.label = np.asarray(self.validationSet.label).ravel()
         self.testSet = copy.copy(test)
 
         # Appending the bias
@@ -101,8 +102,11 @@ class LogisticRegression(Classifier):
 
             if verbose:
                 # cross validation accuracy
-                y_cv_pred = np.asarray(self.evaluate(self.validationSet.input))
-                accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred))
+                y_cv_pred = np.asarray(self.evaluate(self.validationSet.input), dtype=int).ravel()
+                #accuracy = 1.0 - np.mean(np.abs(self.validationSet.label - y_cv_pred)) does not work!
+
+                accuracy = float(np.sum(y_cv_pred == self.validationSet.label)) / self.validationSet.label.shape[0]
+
                 self.accuracy_vec += [accuracy]
                 print("Epoch [{}/{}]: Cross validation accuracy: {}".format(epoch + 1, self.epochs, accuracy))
 
