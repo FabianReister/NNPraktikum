@@ -174,18 +174,28 @@ class MultilayerPerceptron(Classifier):
 
             if verbose:
 
-                y_true = map(np.argmax, self.validationSet.label)
-                y_pred = map(np.argmax, self.evaluate(self.validationSet.input))
+                y_ttrue = map(np.argmax, self.trainingSet.label)
+                y_tpred = self.evaluate(self.trainingSet.input)
+
+                y_vtrue = map(np.argmax, self.validationSet.label)
+                y_vpred = self.evaluate(self.validationSet.input)
 
                 pos = 0
 
-                for y_t, y_p in zip(y_true, y_pred):
+                for y_t, y_p in zip(y_vtrue, y_vpred):
                     pos += float(y_t == y_p)
 
-                pos /= len(y_true)
-                print pos
+                pos /= len(y_vtrue)
+                print "validation", pos
 
-                accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
+                pos = 0
+                for y_t, y_p in zip(y_ttrue, y_tpred):
+                    pos += float(y_t == y_p)
+
+                pos /= len(y_ttrue)
+                print "test", pos
+
+                accuracy = accuracy_score(y_true=y_vtrue, y_pred=y_vpred)
                 # Record the performance of each epoch for later usages
                 # e.g. plotting, reporting..
                 self.performances.append(accuracy)

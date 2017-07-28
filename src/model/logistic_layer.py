@@ -109,8 +109,9 @@ class LogisticLayer():
             a numpy array containing the partial derivatives on this layer
         """
         # FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
+
         dE_dyj = nextDerivatives
-        dyj_dx = Activation.sigmoidPrime(self.y_j)
+        dyj_dx = Activation.getDerivative(self.activationString)(self.y_j)
         dx_dw = self.y_i.reshape((-1, 1))
 
         dE_dxj = (dE_dyj * dyj_dx)
@@ -137,5 +138,5 @@ class LogisticLayer():
         """
         Update the weights of the layer
         """
-        self.weights -= learning_rate * (self.__cummulated_gradient)
+        self.weights -= learning_rate * self.__cummulated_gradient
         self.__resetCummulatedGradient()
