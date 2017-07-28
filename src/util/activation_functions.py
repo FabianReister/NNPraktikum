@@ -9,6 +9,7 @@ from numpy import divide
 from numpy import ones
 from numpy import asarray
 from numpy import sum as np_sum
+from numpy import min
 
 class Activation:
     """
@@ -63,6 +64,9 @@ class Activation:
 
     @staticmethod
     def softmax(netOutput):
+
+        netOutput[netOutput > 10] = 10
+
         exp_out = exp(netOutput)
         return exp_out / np_sum(exp_out)
         

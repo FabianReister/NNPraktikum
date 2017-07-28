@@ -5,9 +5,12 @@ import numpy as np
 from util.activation_functions import Activation
 
 
+# from model.layer import Layer
+
+
 class LogisticLayer():
     """
-    A layer of neural
+    A layer of perceptrons acting as the output layer
 
     Parameters
     ----------
@@ -30,7 +33,7 @@ class LogisticLayer():
         the name of the activation function
     isClassifierLayer: bool
         to do classification or regression
-    deltas : ndarray
+    delta : ndarray
         partial derivatives
     size : positive int
         number of units in the current layer
@@ -39,28 +42,27 @@ class LogisticLayer():
     """
 
     def __init__(self, nIn, nOut, weights=None,
-                 activation='sigmoid', isClassifierLayer=False):
+                 activation='softmax', isClassifierLayer=True):
 
         # Get activation function from string
+        # Notice the functional programming paradigms of Python + Numpy
         self.activationString = activation
         self.activation = Activation.getActivation(self.activationString)
-        self.activationDerivative = Activation.getDerivative(
-                                    self.activationString)
 
         self.nIn = nIn
         self.nOut = nOut
 
-        self.inp = np.ndarray((nIn+1, 1))
-        self.inp[0] = 1
-        self.outp = np.ndarray((nOut, 1))
-        self.deltas = np.zeros((nOut, 1))
+        # Adding bias
+        self.input = np.ndarray((nIn + 1, 1))
+        self.input[0] = 1
+        self.output = np.ndarray((nOut, 1))
+        self.delta = np.zeros((nOut, 1))
 
         # You can have better initialization here
         if weights is None:
             rns = np.random.RandomState(int(time.time()))
-            self.weights = rns.uniform(size=(nIn + 1, nOut))-0.5
+            self.weights = rns.uniform(size=(nOut, nIn + 1)) - 0.5
         else:
-            assert(weights.shape == (nIn + 1, nOut))
             self.weights = weights
 
         self.isClassifierLayer = isClassifierLayer
@@ -69,90 +71,71 @@ class LogisticLayer():
         self.size = self.nOut
         self.shape = self.weights.shape
 
-    def forward(self, inp):
+        self.__counter = 0
+        self.__cummulated_gradient = 0
+
+    def forward(self, input):
         """
         Compute forward step over the input using its weights
 
         Parameters
         ----------
-        inp : ndarray
-            a numpy array (nIn + 1,1) containing the input of the layer
+        input : ndarray
+            a numpy array (1,nIn + 1) containing the input of the layer
 
-        Change outp
+        Returns
         -------
-        outp: ndarray
-            a numpy array (nOut,1) containing the output of the layer
+        ndarray :
+            a numpy array (1,nOut) containing the output of the layer
         """
+        # TODO bias?
+        input = np.insert(input, 0, 1)
+        self.y_i = input
+        self.y_j = self.activation(self.weights.dot(input))
+        return self.y_j
 
-        # Here you have to implement the forward pass
-        self.inp = inp
-        outp = self._fire(inp)
-        self.outp = outp
-
-        return outp
-
-    def computeDerivative(self, next_derivatives, next_weights):
+    def computeDerivative(self, nextDerivatives):
         """
-        Compute the derivatives (backward)
+        Compute the derivatives (back)
 
         Parameters
         ----------
-        next_derivatives: ndarray
+        nextDerivatives: ndarray
             a numpy array containing the derivatives from next layer
-        next_weights : ndarray
-            a numpy array containing the weights from next layer
 
-        Change deltas
+        Returns
         -------
-        deltas: ndarray
+        ndarray :
             a numpy array containing the partial derivatives on this layer
         """
+        # FIXME the dimensions of dE_dyj and dyj_dx do not match (bias...)
+        dE_dyj = nextDerivatives
+        dyj_dx = Activation.sigmoidPrime(self.y_j)
+        dx_dw = self.y_i.reshape((-1, 1))
 
-        # Here the implementation of partial derivative calculation
+        dE_dxj = (dE_dyj * dyj_dx)
+        if len(dE_dxj.shape) > 1:
+            dE_dxj = dE_dxj[0, :]
+        dE_dxj = dE_dxj.reshape((1, -1))
 
-        # In case of the output layer, next_weights is array of 1
-        # and next_derivatives - the derivative of the error will be the errors
-        # Please see the call of this method in LogisticRegression.
-        # self.deltas = (self.outp *
-        #              (1 - self.outp) *
-        #               np.dot(next_derivatives, next_weights))
+        dE_dwij = (dE_dxj * dx_dw).transpose()
+        dE_dyi = self.weights.transpose().dot(dE_dxj.transpose())
 
-        # Or more general: output*(1-output) is the derivatives of sigmoid
-        # (sigmoid_prime)
-        # self.deltas = (Activation.sigmoid_prime(self.outp) *
-        #                np.dot(next_derivatives, next_weights))
-
-        # Or even more general: doesn't care which activation function is used
-        # dado: derivative of activation function w.r.t the output
-        #dado = self.activationDerivative(self.outp)
-        #self.deltas = (dado * np.dot(next_derivatives, next_weights))
-
-        # Or you can explicitly calculate the derivatives for two cases
-        # Page 40 Back-propagation slides
-        if self.isClassifierLayer:
-            self.deltas = (next_derivatives - self.outp) * self.outp * \
-                          (1 - self.outp)
-            self.deltas = self.deltas[0]
+        if self.__counter == 0:
+            self.__cummulated_gradient = dE_dwij
         else:
-            self.deltas = self.outp * (1 - self.outp) * \
-                          np.dot(next_derivatives, next_weights)
-        # Or you can have two computeDerivative methods, feel free to call
-        # the other is computeOutputLayerDerivative or such.
-        return self.deltas
+            self.__cummulated_gradient += dE_dwij
+        self.__counter += 1
 
-    def updateWeights(self, learningRate):
+        return dE_dyi.ravel()[1:]  # skip the bias
+
+    def __resetCummulatedGradient(self):
+        self.__counter = 0
+        self.__cummulated_gradient = 0
+
+    def updateWeights(self, learning_rate):
         """
         Update the weights of the layer
         """
-
-        # weight updating as gradient descent principle
-        for neuron in range(0, self.nOut):
-            self.weights[:, neuron] -= (learningRate *
-                                        self.deltas[neuron] *
-                                        self.inp)
-
-        
-
-    def _fire(self, inp):
-        inp = np.insert(inp, 0, 1, axis=0)
-        return self.activation(np.dot(inp, self.weights))
+        self.weights -= learning_rate * (self.__cummulated_gradient)
+        self.__resetCummulatedGradient()

@@ -135,5 +135,7 @@ class CrossEntropyError(Error):
         for i in range(0, target.ravel().shape[0]):
             t = target.ravel()[i]
             o = output.ravel()[i]
+            if o == 0:
+                o = 0.001
             error_deriv[i] = -t/o + (1 - t)/(1 - o)
         return error_deriv

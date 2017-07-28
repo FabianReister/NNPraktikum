@@ -160,23 +160,46 @@ class MultilayerPerceptron(Classifier):
 
         next_weights=None
 
-        for e in range(0, self.epochs):
+        for e in range(1, self.epochs):
             for input, label in zip(self.trainingSet.input, self.trainingSet.label):
                 output = self._feed_forward(input)
                 errorPrime = self.loss.calculateDerivative(label,output)
                 for layer in reversed(self.layers):
-                    errorPrime = layer.computeDerivative(errorPrime,next_weights)
+                    errorPrime = layer.computeDerivative(errorPrime)
                     next_weights = layer.weights
 
                 self._update_weights(self.learningRate)
+
+            print("Epoch %i/%i" % (e, self.epochs))
+
+            if verbose:
+
+                y_true = map(np.argmax, self.validationSet.label)
+                y_pred = map(np.argmax, self.evaluate(self.validationSet.input))
+
+                pos = 0
+
+                for y_t, y_p in zip(y_true, y_pred):
+                    pos += float(y_t == y_p)
+
+                pos /= len(y_true)
+                print pos
+
+                accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
+                # Record the performance of each epoch for later usages
+                # e.g. plotting, reporting..
+                self.performances.append(accuracy)
+                print("Accuracy on validation: {0:.2f}%"
+                      .format(accuracy * 100))
+                print("-----------------------------")
 
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
         # You need to implement something here
         output = self._feed_forward(test_instance)
-        index = np.argmax(output)
-        return to_categorical(index)
+        return np.argmax(output)
+        #return to_categorical(index)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
