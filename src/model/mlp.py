@@ -5,9 +5,17 @@ from util.loss_functions import CrossEntropyError
 from model.logistic_layer import LogisticLayer
 from model.classifier import Classifier
 
+from util.loss_functions import *
+
 from sklearn.metrics import accuracy_score
 
 import sys
+
+
+def to_categorical(x):
+    y = np.zeros((10, 1), dtype=int)
+    y[x] = 1
+    return y
 
 class MultilayerPerceptron(Classifier):
     """
@@ -16,7 +24,7 @@ class MultilayerPerceptron(Classifier):
 
     def __init__(self, train, valid, test, layers=None, inputWeights=None,
                  outputTask='classification', outputActivation='softmax',
-                 loss='bce', learningRate=0.01, epochs=50):
+                 loss='ce', learningRate=0.01, epochs=50):
 
         """
         A MNIST recognizer based on multi-layer perceptron algorithm
@@ -43,16 +51,22 @@ class MultilayerPerceptron(Classifier):
         self.epochs = epochs
         self.outputTask = outputTask  # Either classification or regression
         self.outputActivation = outputActivation
-        self.cost = cost
+        #self.cost = cost
 
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
-        
+
+        self.trainingSet.label = np.asarray(map(to_categorical, self.trainingSet.label))
+        self.validationSet.label = np.asarray(map(to_categorical, self.validationSet.label))
+        self.testSet.label = np.asarray(map(to_categorical, self.testSet.label))
+
         if loss == 'bce':
             self.loss = BinaryCrossEntropyError()
         elif loss == 'sse':
             self.loss = SumSquaredError()
+        elif loss == 'ce':
+            self.loss = CrossEntropyError()
         elif loss == 'mse':
             self.loss = MeanSquaredError()
         elif loss == 'different':
@@ -85,11 +99,11 @@ class MultilayerPerceptron(Classifier):
         self.inputWeights = inputWeights
 
         # add bias values ("1"s) at the beginning of all data sets
-        self.trainingSet.input = np.insert(self.trainingSet.input, 0, 1,
-                                            axis=1)
-        self.validationSet.input = np.insert(self.validationSet.input, 0, 1,
-                                              axis=1)
-        self.testSet.input = np.insert(self.testSet.input, 0, 1, axis=1)
+        #self.trainingSet.input = np.insert(self.trainingSet.input, 0, 1,
+        #                                    axis=1)
+        #self.validationSet.input = np.insert(self.validationSet.input, 0, 1,
+        #                                      axis=1)
+        #self.testSet.input = np.insert(self.testSet.input, 0, 1, axis=1)
 
 
     def _get_layer(self, layer_index):
@@ -113,6 +127,9 @@ class MultilayerPerceptron(Classifier):
         # Here you have to propagate forward through the layers
         # And remember the activation values of each layer
         """
+        for layer in self.layers:
+            inp=layer.forward(inp)
+        return inp
         
     def _compute_error(self, target):
         """
@@ -129,8 +146,9 @@ class MultilayerPerceptron(Classifier):
         """
         Update the weights of the layers by propagating back the error
         """
-        pass
-        
+        for layer in self.layers:
+            layer.updateWeights(self.learningRate)
+
     def train(self, verbose=True):
         """Train the Multi-layer Perceptrons
 
@@ -139,15 +157,26 @@ class MultilayerPerceptron(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        pass
 
+        next_weights=None
+
+        for e in range(0, self.epochs):
+            for input, label in zip(self.trainingSet.input, self.trainingSet.label):
+                output = self._feed_forward(input)
+                errorPrime = self.loss.calculateDerivative(label,output)
+                for layer in reversed(self.layers):
+                    errorPrime = layer.computeDerivative(errorPrime,next_weights)
+                    next_weights = layer.weights
+
+                self._update_weights(self.learningRate)
 
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
         # You need to implement something here
-        pass
-        
+        output = self._feed_forward(test_instance)
+        index = np.argmax(output)
+        return to_categorical(index)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.

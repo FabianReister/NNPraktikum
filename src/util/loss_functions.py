@@ -122,7 +122,18 @@ class CrossEntropyError(Error):
         self.errorString = 'crossentropy'
 
     def calculateError(self, target, output):
-        pass
+        error = np.zeros_like(target)
+        for i in range(0, target.ravel().shape[0]):
+            t = target.ravel()[i]
+            o = output.ravel()[i]
+            error[i] = t*np.log(o) + (1-t)*np.log(1-o)
+        return error
         
-    def calculateDerivativer(self, target, output):
-        pass
+    def calculateDerivative(self, target, output):
+
+        error_deriv = np.zeros_like(target)
+        for i in range(0, target.ravel().shape[0]):
+            t = target.ravel()[i]
+            o = output.ravel()[i]
+            error_deriv[i] = -t/o + (1 - t)/(1 - o)
+        return error_deriv
